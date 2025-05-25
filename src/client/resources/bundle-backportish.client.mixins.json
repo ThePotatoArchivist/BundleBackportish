@@ -4,9 +4,11 @@
   "compatibilityLevel": "JAVA_17",
   "client": [
     "BundleTooltipComponentMixin",
-    "HandledScreenInvoker"
+    "HandledScreenInvoker",
+    "MouseTweaksMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-	}
+  },
+  "plugin": "archives.tater.bundlebackportish.BundleBackportishClientMixinConfigPlugin"
 }
