@@ -2,20 +2,26 @@ package archives.tater.bundlebackportish.mixin;
 
 import archives.tater.bundlebackportish.BundleSelection;
 import archives.tater.bundlebackportish.SelectionBundleTooltipData;
+
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.llamalad7.mixinextras.sugar.Local;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import net.minecraft.component.ComponentType;
 import net.minecraft.component.type.BundleContentsComponent;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.BundleItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.tooltip.TooltipData;
-import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Inject;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import net.minecraft.screen.slot.Slot;
+
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Optional;
 
@@ -61,5 +67,15 @@ public abstract class BundleItemMixin {
     )
     private static void fixAfterDropAll(ItemStack stack, PlayerEntity player, CallbackInfoReturnable<Boolean> cir) {
         BundleSelection.clear(stack);
+    }
+
+    @WrapOperation(
+            method = "onClicked",
+            at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;set(Lnet/minecraft/component/ComponentType;Ljava/lang/Object;)Ljava/lang/Object;")
+    )
+    private <T> T updateScreenHandler(ItemStack instance, ComponentType<? super T> type, @Nullable T value, Operation<T> original, ItemStack stack, ItemStack otherStack, Slot slot) {
+        var result = original.call(instance, type, value);
+        slot.setStack(instance);
+        return result;
     }
 }
