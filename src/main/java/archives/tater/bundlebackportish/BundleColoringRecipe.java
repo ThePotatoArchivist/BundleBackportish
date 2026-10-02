@@ -24,17 +24,6 @@ public class BundleColoringRecipe extends SpecialCraftingRecipe {
         super(craftingRecipeCategory);
     }
 
-    private <T> boolean containsExactly(Iterable<T> collection, Predicate<T> condition, int matchCount) {
-        var count = 0;
-        for (var item : collection) {
-            if (condition.test(item)) {
-                count++;
-                if (count == matchCount) return true;
-            }
-        }
-        return false;
-    }
-
     private <T> @Nullable T find(Iterable<T> collection, Predicate<T> condition) {
         for (var item : collection) {
             if (condition.test(item)) {
@@ -46,9 +35,26 @@ public class BundleColoringRecipe extends SpecialCraftingRecipe {
 
     @Override
     public boolean matches(CraftingRecipeInput input, World world) {
-        var items = input.getStacks().stream().map(ItemStack::getItem).toList();
-        return containsExactly(items, item -> item instanceof BundleItem, 1) &&
-                containsExactly(items, COLORS::containsKey, 1);
+        boolean hasBundle = false;
+        boolean hasDye = false;
+
+        for (var stack : input.getStacks()) {
+            if (stack.getItem() instanceof BundleItem) {
+                if (hasBundle) return false;
+                hasBundle = true;
+                continue;
+            }
+
+            if (COLORS.containsKey(stack.getItem())) {
+                if (hasDye) return false;
+                hasDye = true;
+                continue;
+            }
+
+            return false;
+        }
+
+        return hasBundle && hasDye;
     }
 
     @Override
